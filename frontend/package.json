@@ -1,0 +1,19 @@
+{
+  "name": "restaurant-frontend",
+  "version": "1.0.0",
+  "description": "Frontend SPA para API de Pedidos",
+  "main": "restaurant_frontend.jsx",
+  "scripts": {
+    "start": "echo 'Utilize um bundler como Vite ou Crie o index.html para iniciar a aplicação.'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.395.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0"
+  }
+}
