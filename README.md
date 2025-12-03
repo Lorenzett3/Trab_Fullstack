@@ -1,33 +1,22 @@
-Resumo da API de Pedidos e Produtos (Conceito B)
-Este projeto consiste em uma API RESTful completa para gerenciamento de pedidos, utilizando Node.js, TypeScript e TypeORM com persistência em PostgreSQL. A arquitetura em camadas (Controller, Service, Entity) e a implementação de autenticação JWT garantem um código robusto e seguro.
+Este projeto é uma API RESTful de gerenciamento de pedidos de restaurante, criada para integrar o back-end (Trabalho 1) com um front-end (Trabalho 2) desenvolvido em React.
 
-Funcionalidades Chave e Conceitos
-A API cumpre e expande os requisitos do Conceito C, focando em:
+1. A Estrutura do Software
+O back-end é construído com Node.js, TypeScript e Express. Para persistência de dados, utilizamos o TypeORM, que traduz os objetos do nosso código para o banco de dados PostgreSQL, rodando tudo em contêineres Docker.
 
-Dois CRUDs Completos: Gerenciamento de Produtos (Itens do Cardápio) e Pedidos (Ordens de Compra).
+2. Os Conceitos Chave (Nota C, B e A)
+O projeto cumpre todos os conceitos de avaliação:
 
-Persistência e Relacionamentos: Uso do TypeORM para manter dados no PostgreSQL, incluindo relacionamentos como Produto para Categoria e Pedido para Cliente.
+Conceito C (Básico): Demonstramos o CRUD completo para duas entidades principais, Produto (o cardápio) e Pedido (a ordem de compra). A interface web permite a Listagem (GET) e o Cadastro (POST) desses dados em uma tela funcional.
 
-Regras de Negócio: O serviço de pedidos inclui validações de negócio, verificando a existência de clientes e produtos relacionados antes de processar a ordem.
+Conceito B (Avançado): A lógica de negócio é comprovada com Validações de Formulários no front-end e no back-end. No React, usamos Hooks (useState, useEffect) para o gerenciamento de estado da aplicação de forma profissional.
 
-Segurança: Implementação de um Login via JWT Token para proteger as rotas de gerenciamento (/produtos e /pedidos).
+Conceito A (Excelência): Implementamos a funcionalidade de Segurança com JWT Token (Json Web Token) e um Middleware no back-end, garantindo que o acesso a todas as rotas de gerenciamento seja protegido por login.
 
-Status Codes: Modelagem REST correta, utilizando 201 Created, 401 Unauthorized e 404 Not Found em todo o fluxo.
+3. Como Rodar e Testar
+A aplicação é iniciada em duas etapas obrigatórias:
 
-Ambiente e Execução com Docker
-O projeto é totalmente conteinerizado para facilitar a execução e a entrega.
+Iniciar o Back-end: Você roda o comando docker-compose up --build no terminal para ligar a API e o banco de dados. O servidor começa a funcionar em http://localhost:3000.
 
-Componente	Comando para Iniciar	Detalhes
-Containers (API + DB)	docker-compose up --build -d	Inicia o serviço Node.js (api) e o banco de dados PostgreSQL (db).
-API Endpoint	http://localhost:3000	URL base para os testes.
-Parar Serviços	docker-compose down	Encerra e remove os contêineres.
+Iniciar o Front-end: Você abre o arquivo frontend/index.html diretamente no seu navegador.
 
-Exportar para as Planilhas
-Fluxo de Teste Essencial
-A API exige o fluxo de autenticação e criação de entidades para funcionar:
-
-Criação de usuário (POST /api/usuarios).
-
-Login para obter o Token (POST /api/login).
-
-Uso do Token no Header para criar e manipular entidades (POST /api/produtos, POST /api/pedidos).
+A partir daí, o front-end (a interface web) se comunica com a API (o back-end) através do localhost:3000 para provar o Login, o Cadastro e a Listagem de dados, validando toda a integração.
