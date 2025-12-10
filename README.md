@@ -1,5 +1,6 @@
 📄 API RESTful de Gerenciamento de Pedidos (Full Stack)
-Este projeto demonstra a integração completa entre uma API RESTful (Back-end) em TypeScript/Node.js e uma aplicação Web Single Page Application (SPA) desenvolvida com JavaScript Puro. O objetivo é simular um sistema robusto de gerenciamento de pedidos de restaurante.
+Este projeto demonstra a integração completa entre uma API RESTful (Back-end) em TypeScript/Node.js e uma aplicação Web Single Page Application (SPA) desenvolvida com JavaScript Puro. 
+O objetivo é simular um sistema robusto de gerenciamento de pedidos de restaurante.
 
 ⚙️ Tecnologias Principais
 O projeto é construído sobre uma arquitetura em camadas e utiliza as seguintes tecnologias:
