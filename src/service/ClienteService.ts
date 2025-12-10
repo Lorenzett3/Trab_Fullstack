@@ -20,4 +20,27 @@ export class ClienteService {
         }
         return await this.repository.save(cliente);
     }
+    
+    async atualizar(id: number, novosDados: Partial<Cliente>): Promise<Cliente> {
+        let clienteAlt = await this.repository.findOneBy({ id: id });
+
+        if (!clienteAlt) {
+            throw ({ id: 404, msg: "Cliente não encontrado" });
+        }
+        
+        if (novosDados.nome) clienteAlt.nome = novosDados.nome;
+        if (novosDados.email) clienteAlt.email = novosDados.email;
+
+        return await this.repository.save(clienteAlt);
+    }
+    
+    async deletar(id: number): Promise<Cliente> {
+        let clienteDeletado = await this.repository.findOneBy({ id: id });
+
+        if (!clienteDeletado) {
+            throw ({ id: 404, msg: "Cliente não encontrado" });
+        }
+        await this.repository.remove(clienteDeletado);
+        return clienteDeletado;
+    }
 }

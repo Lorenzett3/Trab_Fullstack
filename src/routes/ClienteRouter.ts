@@ -8,5 +8,7 @@ export const clienteRotas = (controller: ClienteController): Router => {
 
     router.get('/', controller.listar);
     router.post('/', controller.inserir);
+    router.put('/:id', controller.atualizar); 
+    router.delete('/:id', controller.deletar); 
     return router;
 };

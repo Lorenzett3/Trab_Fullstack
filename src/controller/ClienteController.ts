@@ -30,4 +30,25 @@ export class ClienteController {
             res.status(err.id || 500).json({ error: err.msg || "Erro ao listar clientes" });
         }
     };
+
+    atualizar = async (req: Request, res: Response): Promise<void> => {
+        const id = parseInt(req.params.id);
+        const { nome, email } = req.body;
+        try {
+            const clienteAtualizado = await this.service.atualizar(id, { nome, email });
+            res.json(clienteAtualizado);
+        } catch (err: any) {
+            res.status(err.id || 500).json({ error: err.msg || "Erro ao atualizar cliente" });
+        }
+    };
+
+    deletar = async (req: Request, res: Response): Promise<void> => {
+        const id = parseInt(req.params.id);
+        try {
+            const clienteDeletado = await this.service.deletar(id);
+            res.json(clienteDeletado);
+        } catch (err: any) {
+            res.status(err.id || 500).json({ error: err.msg || "Erro ao deletar cliente" });
+        }
+    };
 }
