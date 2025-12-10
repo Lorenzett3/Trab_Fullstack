@@ -1,22 +1,80 @@
-Este projeto é uma API RESTful de gerenciamento de pedidos de restaurante, criada para integrar o back-end (Trabalho 1) com um front-end (Trabalho 2) desenvolvido em React.
+📄 API RESTful de Gerenciamento de Pedidos (Full Stack)
+Este projeto demonstra a integração completa entre uma API RESTful (Back-end) em TypeScript/Node.js e uma aplicação Web Single Page Application (SPA) desenvolvida com JavaScript Puro. O objetivo é simular um sistema robusto de gerenciamento de pedidos de restaurante.
 
-1. A Estrutura do Software
-O back-end é construído com Node.js, TypeScript e Express. Para persistência de dados, utilizamos o TypeORM, que traduz os objetos do nosso código para o banco de dados PostgreSQL, rodando tudo em contêineres Docker.
+⚙️ Tecnologias Principais
+O projeto é construído sobre uma arquitetura em camadas e utiliza as seguintes tecnologias:
 
-2. Os Conceitos Chave (Nota C, B e A)
-O projeto cumpre todos os conceitos de avaliação:
+Back-end (API): Node.js, Express, TypeScript.
 
-Conceito C (Básico): Demonstramos o CRUD completo para duas entidades principais, Produto (o cardápio) e Pedido (a ordem de compra). A interface web permite a Listagem (GET) e o Cadastro (POST) desses dados em uma tela funcional.
+Banco de Dados: PostgreSQL (orquestrado via Docker).
 
-Conceito B (Avançado): A lógica de negócio é comprovada com Validações de Formulários no front-end e no back-end. No React, usamos Hooks (useState, useEffect) para o gerenciamento de estado da aplicação de forma profissional.
+Mapeamento de Dados (ORM): TypeORM.
 
-Conceito A (Excelência): Implementamos a funcionalidade de Segurança com JWT Token (Json Web Token) e um Middleware no back-end, garantindo que o acesso a todas as rotas de gerenciamento seja protegido por login.
+Front-end (SPA): HTML, CSS e JavaScript Puro (focado na performance e simplicidade de execução).
 
-3. Como Rodar e Testar
-A aplicação é iniciada em duas etapas obrigatórias:
+Controle de Ambiente: Docker e Docker Compose.
 
-Iniciar o Back-end: Você roda o comando docker-compose up --build no terminal para ligar a API e o banco de dados. O servidor começa a funcionar em http://localhost:3000.
+🔒 Destaques e Funcionalidades Chave (Conceito A)
+O sistema cumpre os requisitos de excelência, com foco em segurança e complexidade de negócios:
 
-Iniciar o Front-end: Você abre o arquivo frontend/index.html diretamente no seu navegador.
+Autenticação JWT: Todas as rotas de gerenciamento são protegidas por JSON Web Tokens (JWT) e validadas por um Middleware dedicado.
 
-A partir daí, o front-end (a interface web) se comunica com a API (o back-end) através do localhost:3000 para provar o Login, o Cadastro e a Listagem de dados, validando toda a integração.
+CRUD Completo: Suporte a Criação, Leitura, Atualização e Deleção para as entidades de Produtos e Pedidos.
+
+Lógica de Negócio Avançada:
+
+Gestão do relacionamento entre pedidos e múltiplos produtos (relação muitos-para-muitos).
+
+Funcionalidade de Cadastro Rápido de Clientes integrada à tela de criação de pedidos.
+
+Visualização e Edição Detalhada de pedidos específicos ao selecionar um cliente.
+
+🚀 Como Iniciar e Testar o Sistema
+Siga estes passos sequenciais para levantar o ambiente completo (Back-end e Front-end):
+
+1. Iniciar o Servidor (API e DB)
+Na pasta raiz do projeto (onde está o arquivo docker-compose.yml), execute o comando:
+
+Bash
+
+docker-compose up --build
+O servidor da API estará acessível em: http://localhost:3000.
+
+2. Acessar a Interface (SPA)
+Abra o arquivo HTML no seu navegador (sem necessidade de servidor web):
+
+Bash
+
+/caminho/do/seu/projeto/frontend/index.html
+📋 Guia Rápido de Uso (Fluxo de Teste)
+Para provar o funcionamento de todas as rotas protegidas:
+
+Acesso: Na tela inicial, utilize a opção Cadastre-se aqui para criar um novo usuário e, em seguida, faça o Login.
+
+Preparação de Dados:
+
+Acesse a aba Produtos e cadastre alguns itens de cardápio.
+
+Acesse a aba Pedidos e use o formulário Cadastro Rápido de Cliente para registrar um novo cliente.
+
+Criação de Pedido (POST complexo):
+
+Na aba Pedidos, selecione o cliente criado na dropdown (que exibe o nome).
+
+Clique nos produtos na lista para adicioná-los ao pedido.
+
+Clique em "Fazer Pedido".
+
+Gestão de Pedidos por Cliente (GET e PUT avançado):
+
+Navegue para a aba Clientes.
+
+Clique no nome do cliente que fez o pedido.
+
+No painel de pedidos do cliente, clique em Editar em um pedido:
+
+Demonstre a capacidade de remover itens existentes (clicando em [X Remover]).
+
+Demonstre a capacidade de adicionar novos itens do cardápio.
+
+Clique em "Provar Rota PUT" para salvar as alterações.

@@ -1,3 +1,5 @@
+//data-source.ts
+
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Produto } from "./entity/Produto";
@@ -13,7 +15,7 @@ export const AppDataSource = new DataSource({
     username: process.env.POSTGRES_USER || "user",
     password: process.env.POSTGRES_PASSWORD || "password",
     database: process.env.POSTGRES_DB || "rest_db",
-    synchronize: true, 
+    synchronize: true,
     logging: false,
     entities: [Produto, Pedido, Usuario, Cliente, Categoria],
     migrations: [],

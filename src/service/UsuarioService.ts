@@ -1,3 +1,5 @@
+//service/UsuarioService.ts
+
 import { Repository } from 'typeorm';
 import { Usuario } from '../entity/Usuario';
 
@@ -9,9 +11,9 @@ export class UsuarioService {
   }
 
   async inserir(usuario: Usuario): Promise<Usuario> {
-    if(!usuario || !usuario.email || !usuario.senha) {
-        throw ({id: 400, msg: "Falta dados obrigatórios para o cadastro"});     
-    } 
+    if (!usuario || !usuario.email || !usuario.senha) {
+      throw ({ id: 400, msg: "Falta dados obrigatórios para o cadastro" });
+    }
     return await this.repository.save(usuario);
   }
 

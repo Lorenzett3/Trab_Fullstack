@@ -1,665 +1,234 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>API Restaurante - Frontend Autocontido</title>
-    <!-- Inclui o Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso ao Sistema</title>
     <style>
-      /* Estilos básicos */
-      body {
-        font-family: "Inter", sans-serif;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            transition: height 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .success {
+            color: green;
+            background-color: #d4edda;
+        }
+
+        .error {
+            color: red;
+            background-color: #f8d7da;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .toggle-link a {
+            color: #2196F3;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
-  </head>
-  <body>
-    <!-- ONDE O REACT SERÁ RENDERIZADO -->
-    <div id="root"></div>
+</head>
 
-    <!-- 1. BIBLIOTECAS REACT E BABEL (Carregamento externo) -->
-    <script
-      src="https://unpkg.com/react@18/umd/react.production.min.js"
-      crossorigin
-    ></script>
-    <script
-      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
-      crossorigin
-    ></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+<body>
+    <div class="container">
 
-    <!-- 2. CÓDIGO REACT E JAVASCRIPT (TODO O SEU FRONT-END AQUI) -->
-    <script type="text/babel">
-      // Este é o método mais robusto: todo o seu código React está aqui.
-      // As bibliotecas globais são acessadas sem a sintaxe 'import'.
-
-      const { useState, useEffect, useCallback, createContext, useContext } =
-        React;
-      const { LogOut, List, ShoppingCart, AlertTriangle, Plus, Send } = lucide;
-
-      // URL base da sua API de pedidos (rodando no Docker na porta 3000)
-      const API_BASE_URL = "http://localhost:3000/api";
-
-      // --- Contexto de Autenticação e API ---
-      const AuthContext = createContext();
-
-      const useAuth = () => {
-        const [token, setToken] = useState(
-          localStorage.getItem("authToken") || null
-        );
-        const [userEmail, setUserEmail] = useState(
-          localStorage.getItem("userEmail") || ""
-        );
-
-        useEffect(() => {
-          if (token) {
-            localStorage.setItem("authToken", token);
-            localStorage.setItem("userEmail", userEmail);
-          } else {
-            localStorage.removeItem("authToken");
-            localStorage.removeItem("userEmail");
-          }
-        }, [token, userEmail]);
-
-        const logout = () => {
-          setToken(null);
-          setUserEmail("");
-        };
-
-        const authenticatedFetch = useCallback(
-          async (endpoint, options = {}) => {
-            const headers = {
-              "Content-Type": "application/json",
-              Token: token || "",
-              ...options.headers,
-            };
-
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-              ...options,
-              headers,
-            });
-
-            if (response.status === 401) {
-              logout();
-            }
-
-            return response;
-          },
-          [token]
-        );
-
-        return {
-          token,
-          userEmail,
-          setToken,
-          setUserEmail,
-          logout,
-          authenticatedFetch,
-        };
-      };
-
-      // --- Componente: Cabeçalho da Aplicação ---
-      const Header = ({ userEmail, logout, currentPage, setCurrentPage }) => {
-        const navItems = [
-          { name: "Listar Produtos", icon: List, page: "list" },
-          { name: "Cadastrar Produto", icon: Plus, page: "form" },
-        ];
-
-        return (
-          <header className="bg-gray-800 text-white shadow-lg">
-            <div className="container mx-auto p-4 flex justify-between items-center flex-wrap">
-              <h1 className="text-2xl font-bold flex items-center">
-                <ShoppingCart className="mr-2" size={24} />
-                API Restaurante - Frontend
-              </h1>
-
-              <nav className="flex space-x-4 mt-2 sm:mt-0">
-                {userEmail &&
-                  navItems.map((item) => (
-                    <button
-                      key={item.page}
-                      onClick={() => setCurrentPage(item.page)}
-                      className={`p-2 rounded-lg transition-colors flex items-center ${
-                        currentPage === item.page
-                          ? "bg-indigo-600"
-                          : "hover:bg-gray-700"
-                      }`}
-                    >
-                      <item.icon size={18} className="mr-1" />
-                      {item.name}
-                    </button>
-                  ))}
-              </nav>
-
-              {userEmail && (
-                <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                  <span className="text-sm font-medium">
-                    Logado como: {userEmail}
-                  </span>
-                  <button
-                    onClick={logout}
-                    className="bg-red-600 hover:bg-red-700 p-2 rounded-lg transition-colors flex items-center"
-                  >
-                    <LogOut size={18} className="mr-1" />
-                    Sair
-                  </button>
-                </div>
-              )}
+        <div id="loginArea">
+            <h2>Acesso (Login)</h2>
+            <form id="loginForm">
+                <input type="email" id="login-email" placeholder="E-mail" required>
+                <input type="password" id="login-senha" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <div class="toggle-link">
+                Não tem conta? <a id="showSignup">Cadastre-se aqui</a>
             </div>
-          </header>
-        );
-      };
+        </div>
 
-      // --- Componente: Tela de Login ---
-      const LoginScreen = ({ setToken, setUserEmail }) => {
-        const [email, setEmail] = useState("");
-        const [senha, setSenha] = useState("");
-        const [error, setError] = useState(null);
-        const [isRegistering, setIsRegistering] = useState(false);
-        const [loading, setLoading] = useState(false);
-
-        const endpoint = isRegistering ? "/usuarios" : "/login";
-
-        const handleSubmit = async (e) => {
-          e.preventDefault();
-          setError(null);
-          setLoading(true);
-
-          try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, senha }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              setError(
-                data.error ||
-                  `Erro ao ${isRegistering ? "cadastrar" : "logar"}. Status: ${
-                    response.status
-                  }`
-              );
-              setLoading(false);
-              return;
-            }
-
-            if (isRegistering) {
-              alert("Cadastro realizado com sucesso! Faça login.");
-              setIsRegistering(false);
-              setLoading(false);
-              return;
-            }
-
-            if (data.token) {
-              setToken(data.token);
-              setUserEmail(email);
-            }
-          } catch (e) {
-            setError(
-              "Erro de conexão com o servidor. Verifique se o Docker está rodando."
-            );
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        return (
-          <div className="flex items-center justify-center min-h-[calc(100vh-80px)] bg-gray-100">
-            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-              <h2 className="text-3xl font-extrabold text-gray-900 text-center mb-6">
-                {isRegistering ? "Cadastrar Novo Usuário" : "Acesso ao Sistema"}
-              </h2>
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 flex items-center">
-                  <AlertTriangle size={20} className="mr-2" />
-                  {error}
-                </div>
-              )}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="seu.email@exemplo.com"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="senha"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Senha
-                  </label>
-                  <input
-                    id="senha"
-                    type="password"
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="********"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:bg-gray-400"
-                >
-                  {loading
-                    ? "Aguarde..."
-                    : isRegistering
-                    ? "Cadastrar"
-                    : "Entrar"}
-                </button>
-              </form>
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => setIsRegistering(!isRegistering)}
-                  className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors"
-                >
-                  {isRegistering
-                    ? "Já tem conta? Faça Login"
-                    : "Não tem conta? Cadastre-se aqui"}
-                </button>
-              </div>
+        <div id="signupArea" class="hidden">
+            <h2>Novo Cadastro</h2>
+            <form id="signupForm">
+                <input type="email" id="signup-email" placeholder="E-mail" required>
+                <input type="password" id="signup-senha" placeholder="Senha" required>
+                <button type="submit">Cadastrar</button>
+            </form>
+            <div class="toggle-link">
+                Já tem conta? <a id="showLogin">Fazer Login</a>
             </div>
-          </div>
-        );
-      };
+        </div>
 
-      // --- Componente: Listagem de Produtos (GET) ---
-      const ProductListScreen = () => {
-        const { authenticatedFetch } = useContext(AuthContext);
-        const [products, setProducts] = useState([]);
-        const [loading, setLoading] = useState(true);
-        const [error, setError] = useState(null);
+        <p id="message"></p>
+    </div>
 
-        const fetchProducts = async () => {
-          setLoading(true);
-          setError(null);
-          try {
-            const response = await authenticatedFetch("/produtos", {
-              method: "GET",
-            });
+    <script>
+        const API_URL = 'http://localhost:3000/api';
 
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(
-                errorData.error ||
-                  `Falha ao buscar produtos. Status: ${response.status}`
-              );
-            }
+        const $ = (id) => document.getElementById(id);
+        const messageElement = $('message');
+        const loginArea = $('loginArea');
+        const signupArea = $('signupArea');
 
-            const data = await response.json();
-            setProducts(data);
-          } catch (err) {
-            setError(err.message);
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        useEffect(() => {
-          fetchProducts();
-        }, []);
-
-        if (loading) {
-          return (
-            <div className="text-center p-8 text-indigo-600 font-bold">
-              A carregar Itens do Cardápio...
-            </div>
-          );
+        function displayMessage(msg, isSuccess = true) {
+            messageElement.textContent = msg;
+            messageElement.className = isSuccess ? 'success' : 'error';
         }
 
-        if (error) {
-          return (
-            <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg m-6 flex items-center justify-center">
-              <AlertTriangle size={20} className="mr-2" />
-              Erro ao carregar dados: {error}. Certifique-se de que o backend
-              está a correr e que tem permissões.
-            </div>
-          );
+        function clearMessage() {
+            messageElement.textContent = '';
+            messageElement.className = '';
         }
 
-        return (
-          <div className="container mx-auto p-6">
-            <h2 className="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">
-              Cardápio do Restaurante
-            </h2>
-            <button
-              onClick={fetchProducts}
-              className="mb-4 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg transition-colors shadow-md"
-            >
-              <List size={18} className="inline mr-2" />
-              Atualizar Lista
-            </button>
-
-            <div className="bg-white shadow-xl rounded-xl overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Categoria
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Preço
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {products.length > 0 ? (
-                    products.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {product.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          {product.nome}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          {product.categoria?.nome || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          R$ {parseFloat(product.preco).toFixed(2)}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="4"
-                        className="px-6 py-4 text-center text-gray-500"
-                      >
-                        Nenhum produto registado.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      };
-
-      // --- Componente: Formulário de Cadastro de Produto (POST) ---
-      const ProductFormScreen = () => {
-        const { authenticatedFetch } = useContext(AuthContext);
-        const [formData, setFormData] = useState({
-          nome: "",
-          categoriaId: "",
-          preco: "",
+        $('showSignup').addEventListener('click', () => {
+            loginArea.classList.add('hidden');
+            signupArea.classList.remove('hidden');
+            clearMessage();
         });
-        const [message, setMessage] = useState(null);
-        const [error, setError] = useState(null);
-        const [loading, setLoading] = useState(false);
-        const [categories, setCategories] = useState([]);
 
-        const isFormValid =
-          formData.nome && formData.categoriaId && formData.preco > 0;
+        $('showLogin').addEventListener('click', () => {
+            signupArea.classList.add('hidden');
+            loginArea.classList.remove('hidden');
+            clearMessage();
+        });
 
-        useEffect(() => {
-          const fetchCategories = async () => {
+
+        $('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessage();
+
+            const email = $('login-email').value;
+            const senha = $('login-senha').value;
+
             try {
-              const response = await authenticatedFetch("/categorias", {
-                method: "GET",
-              });
-              if (response.ok) {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, senha })
+                });
+
                 const data = await response.json();
-                setCategories(data);
-              }
-            } catch (e) {
-              console.error("Erro ao buscar categorias:", e);
+
+                if (response.ok) {
+                    const token = data.token;
+                    localStorage.setItem('auth_token', token);
+                    displayMessage('Login bem-sucedido! Redirecionando...', true);
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+
+                } else {
+                    const errorMessage = data.error || 'Erro desconhecido ao logar.';
+                    displayMessage(`Falha no Login: ${errorMessage}`, false);
+                }
+            } catch (error) {
+                displayMessage('Erro de conexão com a API. Verifique se o backend está rodando.', false);
+                console.error('Fetch error:', error);
             }
-          };
-          fetchCategories();
-        }, []);
+        });
 
-        const handleChange = (e) => {
-          const { name, value } = e.target;
-          setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-        };
 
-        const handleSubmit = async (e) => {
-          e.preventDefault();
-          setMessage(null);
-          setError(null);
-          setLoading(true);
+        $('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessage();
 
-          const productData = {
-            nome: formData.nome,
-            categoria: { id: parseInt(formData.categoriaId) },
-            preco: parseFloat(formData.preco),
-          };
+            const email = $('signup-email').value;
+            const senha = $('signup-senha').value;
 
-          try {
-            const response = await authenticatedFetch("/produtos", {
-              method: "POST",
-              body: JSON.stringify(productData),
-            });
+            try {
+                const response = await fetch(`${API_URL}/usuarios`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, senha })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (!response.ok) {
-              throw new Error(
-                data.error || `Falha no registo. Status: ${response.status}`
-              );
+                if (response.ok) {
+                    displayMessage('Usuário cadastrado com sucesso! Faça o login.', true);
+                    signupArea.classList.add('hidden');
+                    loginArea.classList.remove('hidden');
+                    $('login-email').value = email; // Preenche o email para facilitar
+
+                } else {
+                    const errorMessage = data.error || 'Erro desconhecido ao cadastrar.';
+                    displayMessage(`Falha no Cadastro: ${errorMessage}`, false);
+                }
+            } catch (error) {
+                displayMessage('Erro de conexão com a API. Verifique se o backend está rodando.', false);
+                console.error('Fetch error:', error);
             }
+        });
 
-            setMessage(
-              `Produto "${data.nome}" registado com sucesso! ID: ${data.id}`
-            );
-            setFormData({ nome: "", categoriaId: "", preco: "" });
-          } catch (err) {
-            setError(
-              err.message || "Erro de conexão ou validação no servidor."
-            );
-          } finally {
-            setLoading(false);
-          }
-        };
 
-        return (
-          <div className="container mx-auto p-6 flex justify-center">
-            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
-              <h2 className="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-2">
-                Registar Novo Item no Cardápio
-              </h2>
-              {message && (
-                <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 flex items-center">
-                  <Send size={20} className="mr-2" />
-                  {message}
-                </div>
-              )}
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg mb-4 flex items-center">
-                  <AlertTriangle size={20} className="mr-2" />
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Campo Nome */}
-                <div>
-                  <label
-                    htmlFor="nome"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Nome do Produto (Obrigatório)
-                  </label>
-                  <input
-                    id="nome"
-                    name="nome"
-                    type="text"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Ex: X-Burguer Especial"
-                  />
-                </div>
-
-                {/* Campo Preço */}
-                <div>
-                  <label
-                    htmlFor="preco"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Preço (R$)
-                  </label>
-                  <input
-                    id="preco"
-                    name="preco"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value={formData.preco}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Ex: 35.00"
-                  />
-                </div>
-
-                {/* Campo Categoria (Relação de Entidade) */}
-                <div>
-                  <label
-                    htmlFor="categoriaId"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Categoria (Obrigatório)
-                  </label>
-                  <select
-                    id="categoriaId"
-                    name="categoriaId"
-                    value={formData.categoriaId}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                  >
-                    <option value="" disabled>
-                      Selecione uma categoria
-                    </option>
-                    {categories.length > 0 ? (
-                      categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.nome} (ID: {cat.id})
-                        </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        Não há categorias. Registe uma via API/Insomnia.
-                      </option>
-                    )}
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Se não houver categorias, registe uma via Insomnia (`POST
-                    /api/categorias`).
-                  </p>
-                </div>
-
-                {/* Botão de Submissão */}
-                <button
-                  type="submit"
-                  disabled={loading || !isFormValid}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:bg-gray-400"
-                >
-                  {loading ? "A Enviar..." : "Registar Produto"}
-                </button>
-
-                {!isFormValid && (
-                  <p className="text-red-500 text-center text-sm">
-                    Preencha todos os campos obrigatórios.
-                  </p>
-                )}
-              </form>
-            </div>
-          </div>
-        );
-      };
-
-      // --- Componente: Main App (Roteamento Básico) ---
-      const App = () => {
-        const {
-          token,
-          userEmail,
-          setToken,
-          setUserEmail,
-          logout,
-          authenticatedFetch,
-        } = useAuth();
-        const [currentPage, setCurrentPage] = useState("list");
-
-        // Se não houver token, mostra a tela de login
-        if (!token) {
-          return (
-            <LoginScreen setToken={setToken} setUserEmail={setUserEmail} />
-          );
+        if (localStorage.getItem('auth_token')) {
+            window.location.href = 'dashboard.html';
         }
-
-        let content;
-        switch (currentPage) {
-          case "list":
-            content = <ProductListScreen />;
-            break;
-          case "form":
-            content = <ProductFormScreen />;
-            break;
-          default:
-            content = <ProductListScreen />;
-        }
-
-        return (
-          <AuthContext.Provider
-            value={{ token, userEmail, logout, authenticatedFetch }}
-          >
-            <div className="min-h-screen bg-gray-100 font-sans antialiased">
-              <Header
-                userEmail={userEmail}
-                logout={logout}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-              />
-
-              <main className="pb-8">{content}</main>
-            </div>
-          </AuthContext.Provider>
-        );
-      };
-
-      // Torna o componente 'App' acessível globalmente para a renderização
-      window.App = App;
-
-      // --- INICIALIZAÇÃO FINAL DO REACT ---
-      const rootElement = document.getElementById("root");
-      if (rootElement && typeof window.App !== "undefined") {
-        ReactDOM.createRoot(rootElement).render(<App />);
-      } else {
-        console.error(
-          "Falha ao inicializar o React: Elemento #root ou componente App ausente."
-        );
-      }
     </script>
-  </body>
+</body>
+
 </html>

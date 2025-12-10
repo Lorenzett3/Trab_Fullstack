@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gerenciamento de Pedidos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        /* Estilos das Abas */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background-color: #eee;
+        }
+
+        .tab-button.active {
+            background-color: white;
+            border-top: 3px solid #4CAF50;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            min-height: 400px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Estilos de Formulário */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Estilos de Tabela e Ações */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .action-btns button {
+            margin-right: 5px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .message-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        /* Estilos específicos para Pedidos */
+        .product-item {
+            cursor: pointer;
+            padding: 5px;
+            margin-bottom: 2px;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .product-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .selected-products-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .selected-products-list li {
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-product {
+            cursor: pointer;
+            color: #f44336;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* Clientes Table Row */
+        .clickable-row {
+            cursor: pointer;
+        }
+
+        .clickable-row:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Dashboard do Restaurante</h1>
+        <button id="logoutButton">Sair (Logout)</button>
+    </div>
+
+    <div class="tabs">
+        <div class="tab-button active" data-tab="products">Produtos</div>
+        <div class="tab-button" data-tab="orders">Pedidos</div>
+        <div class="tab-button" data-tab="clients">Clientes</div>
+    </div>
+
+    <div id="products-content" class="tab-content">
+        <h2>Gerenciar Produtos</h2>
+        <div id="product-message" class="message-status hidden"></div>
+
+        <h3>Novo Produto / Editar (<span id="product-form-mode">Criar</span>)</h3>
+        <form id="productForm">
+            <input type="hidden" id="product-id">
+            <div class="form-group">
+                <label for="product-name">Nome:</label>
+                <input type="text" id="product-name" required>
+            </div>
+            <div class="form-group">
+                <label for="product-category">Categoria:</label>
+                <select id="product-category" required>
+                    <option value="">Selecione a Categoria</option>
+                    <option value="1">Sanduíches</option>
+                    <option value="2">Bebidas</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="product-price">Preço:</label>
+                <input type="number" id="product-price" step="0.01" required>
+            </div>
+            <button type="submit" class="submit-btn" id="product-submit-btn">Criar Produto</button>
+            <button type="button" class="submit-btn delete-btn hidden" id="product-cancel-btn">Cancelar Edição</button>
+        </form>
+
+        <h3>Lista de Produtos</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="productsBody">
+                <tr>
+                    <td colspan="5">Carregando produtos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="orders-content" class="tab-content hidden">
+        <h2>Gerenciar Pedidos</h2>
+        <div id="order-message" class="message-status hidden"></div>
+
+        <h3>Criar Novo Pedido</h3>
+
+        <div style="border: 1px dashed #4CAF50; padding: 10px; margin-bottom: 20px;">
+            <h4>Cadastro Rápido de Cliente</h4>
+            <div id="quickClientMessage" class="message-status hidden"></div>
+            <form id="quickClientForm">
+                <div class="form-group">
+                    <label for="quick-client-nome">Nome do Cliente:</label>
+                    <input type="text" id="quick-client-nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="quick-client-email">E-mail do Cliente:</label>
+                    <input type="email" id="quick-client-email" required>
+                </div>
+                <button type="submit" class="submit-btn" style="background-color: #2196F3;">+ Cadastrar Cliente</button>
+            </form>
+        </div>
+
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="order-client">Cliente:</label>
+                <select id="order-client" required>
+                    <option value="">Selecione um Cliente (Nome)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Produtos do Cardápio (Clique para adicionar):</label>
+                <div id="availableProductsList"
+                    style="border: 1px solid #ccc; padding: 10px; height: 100px; overflow-y: scroll;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Itens Adicionados ao Pedido:</label>
+                <ul id="selectedProductsList" class="selected-products-list">
+                    <li>Nenhum produto selecionado.</li>
+                </ul>
+            </div>
+
+            <button type="submit" class="submit-btn">Fazer Pedido</button>
+        </form>
+
+        <h3>Lista de Pedidos Existentes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID do Pedido</th>
+                    <th>Data/Hora</th>
+                    <th>Cliente</th>
+                    <th>Qtd. Produtos</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="ordersBody">
+                <tr>
+                    <td colspan="5">Carregando pedidos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="clients-content" class="tab-content hidden">
+        <h2>Clientes Cadastrados</h2>
+        <div id="client-message" class="message-status hidden"></div>
+
+        <h3>Lista de Clientes (Clique para ver Pedidos)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                </tr>
+            </thead>
+            <tbody id="clientsBody">
+                <tr>
+                    <td colspan="3">Carregando clientes...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div id="clientOrdersArea" class="hidden"
+            style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
+            <h3>Pedidos do Cliente: <span id="selectedClientId"></span></h3>
+            <div id="clientOrderMessage" class="message-status hidden"></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID do Pedido</th>
+                        <th>Data/Hora</th>
+                        <th>Qtd. Produtos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="clientOrdersBody">
+                    <tr>
+                        <td colspan="4">Selecione um cliente acima.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 style="margin-top: 20px;">Editar Pedido Selecionado (<span id="editingOrderId">Nenhum</span>)</h4>
+            <form id="editOrderForm" class="hidden" style="border: 1px solid #ddd; padding: 15px;">
+                <input type="hidden" id="edit-order-id">
+
+                <div class="form-group">
+                    <label>Produtos Atuais (Clique [X Remover]):</label>
+                    <ul id="currentOrderProductsList" class="selected-products-list"></ul>
+                </div>
+
+                <div class="form-group">
+                    <label>Adicionar Produtos do Cardápio (Clique para adicionar):</label>
+                    <div id="availableProductsListForEdit"
+                        style="border: 1px solid #ccc; padding: 10px; height: 80px; overflow-y: scroll;">
+                        Carregando cardápio...
+                    </div>
+                </div>
+
+                <p style="color: gray; margin-top: 10px;">*As alterações substituirão a lista original no Back-end.</p>
+                <button type="submit" class="submit-btn edit-btn">Salvar Alterações</button>
+                <button type="button" class="submit-btn delete-btn" id="cancelEditOrder">Cancelar Edição</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const token = localStorage.getItem('auth_token');
+
+        if (!token) {
+            alert('Sessão expirada ou acesso negado! Faça login novamente.');
+            window.location.href = 'index.html';
+        }
+
+        // --- Variáveis de Estado Global ---
+        let availableProducts = [];
+        let selectedProducts = []; // Para formulário de criação
+        let editingOrderProducts = []; // Para formulário de edição
+        let currentEditingOrderId = null;
+        const CLIENT_ENDPOINT = 'clientes';
+
+        // --- Variáveis de DOM e Helpers ---
+        const $ = (id) => document.getElementById(id);
+
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content');
+
+        // --- Funções Genéricas de API ---
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const options = {
+                method: method,
+                headers: {
+                    'Token': token,
+                    'Content-Type': 'application/json'
+                },
+            };
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(`${API_URL}/${endpoint}`, options);
+            const responseData = await response.json().catch(() => ({}));
+
+            if (response.status === 401) {
+                alert('Sessão expirada. Por favor, faça login novamente.');
+                localStorage.removeItem('auth_token');
+                window.location.href = 'index.html';
+                throw new Error('Unauthorized');
+            }
+
+            if (!response.ok) {
+                const errorMessage = responseData.error || `Erro desconhecido: Status ${response.status}`;
+                throw new Error(errorMessage);
+            }
+
+            return responseData;
+        }
+
+        // --- Mensagens de Status ---
+        function displayMessage(elemId, msg, isSuccess = true) {
+            const elem = $(elemId);
+            elem.textContent = msg;
+            elem.className = 'message-status';
+            elem.classList.add(isSuccess ? 'success' : 'error');
+            elem.classList.remove('hidden');
+            setTimeout(() => elem.classList.add('hidden'), 5000);
+        }
+
+        // --- 1. Lógica do Logout e Abas ---
+        $('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('auth_token');
+            window.location.href = 'index.html';
+        });
+
+        tabs.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.getAttribute('data-tab');
+
+                tabs.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                contents.forEach(content => content.classList.add('hidden'));
+                $(`${target}-content`).classList.remove('hidden');
+
+                if (target === 'products') loadProducts();
+                if (target === 'orders') {
+                    loadOrders();
+                    loadOrderFormDependencies();
+                    $('quickClientMessage').classList.add('hidden');
+                }
+                if (target === 'clients') loadClients();
+            });
+        });
+
+        // --- 2. CRUD de Produtos ---
+        async function loadProducts() {
+            $('productsBody').innerHTML = '<tr><td colspan="5">Carregando produtos...</td></tr>';
+            try {
+                const products = await apiRequest('produtos');
+                availableProducts = products;
+                renderProducts(products);
+            } catch (error) {
+                $('productsBody').innerHTML = `<tr><td colspan="5" class="error-message">${error.message}</td></tr>`;
+            }
+        }
+
+        function renderProducts(products) {
+            $('productsBody').innerHTML = '';
+            if (products.length === 0) {
+                $('productsBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum produto cadastrado.</td></tr>';
+                return;
+            }
+
+            products.forEach(product => {
+                const row = $('productsBody').insertRow();
+                const categoryName = product.categoria ? product.categoria.nome : 'N/A';
+
+                row.insertCell().textContent = product.id;
+                row.insertCell().textContent = product.nome;
+                row.insertCell().textContent = categoryName;
+                row.insertCell().textContent = `R$ ${parseFloat(product.preco).toFixed(2)}`;
+
+                const actionsCell = row.insertCell();
+                actionsCell.className = 'action-btns';
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Editar';
+                editBtn.className = 'edit-btn';
+                editBtn.onclick = () => loadProductForEdit(product);
+                actionsCell.appendChild(editBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Deletar';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteProduct(product.id);
+                actionsCell.appendChild(deleteBtn);
+            });
+        }
+
+        $('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const id = $('product-id').value;
+            const nome = $('product-name').value;
+            const preco = parseFloat($('product-price').value);
+            const categoriaId = parseInt($('product-category').value);
+
+            const payload = {
+                nome,
+                preco,
+                categoria: { id: categoriaId }
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const endpoint = id ? `produtos/${id}` : 'produtos';
+            const action = id ? 'Atualizado' : 'Criado';
+
+            try {
+                await apiRequest(endpoint, method, payload);
+                displayMessage('product-message', `Produto ${action} com sucesso!`, true);
+
+                $('productForm').reset();
+                $('product-id').value = '';
+                $('product-form-mode').textContent = 'Criar';
+                $('product-submit-btn').textContent = 'Criar Produto';
+                $('product-cancel-btn').classList.add('hidden');
+
+                loadProducts();
+            } catch (error) {
+                displayMessage('product-message', `Erro ao ${action.toLowerCase()}: ${error.message}`, false);
+            }
+        });
+
+        async function deleteProduct(id) {
+            if (!confirm(`Tem certeza que deseja deletar o produto ID ${id}?`)) return;
+
+            try {
+                await apiRequest(`produtos/${id}`, 'DELETE');
+                displayMessage('product-message', `Produto ID ${id} deletado com sucesso!`, true);
+                loadProducts();
+            } catch (error) {
+                displayMessage('product-message', `Erro ao deletar produto: ${error.message}`, false);
+            }
+        }
+
+        function loadProductForEdit(product) {
+            $('product-id').value = product.id;
+            $('product-name').value = product.nome;
+            $('product-price').value = product.preco;
+            $('product-category').value = product.categoria ? product.categoria.id : '';
+
+            $('product-form-mode').textContent = 'Editar';
+            $('product-submit-btn').textContent = 'Salvar Alterações';
+            $('product-cancel-btn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        $('product-cancel-btn').addEventListener('click', () => {
+            $('productForm').reset();
+            $('product-id').value = '';
+            $('product-form-mode').textContent = 'Criar';
+            $('product-submit-btn').textContent = 'Criar Produto';
+            $('product-cancel-btn').classList.add('hidden');
+        });
+
+        // --- 3. CRUD de Pedidos (Com Criação Rápida de Cliente) ---
+
+        // Lógica de Cadastro Rápido de Cliente
+        $('quickClientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nome = $('quick-client-nome').value;
+            const email = $('quick-client-email').value;
+
+            const payload = { nome, email };
+
+            try {
+                await apiRequest(CLIENT_ENDPOINT, 'POST', payload);
+
+                displayMessage('quickClientMessage', `Cliente ${nome} cadastrado com sucesso! Recarregando lista...`, true);
+
+                $('quickClientForm').reset();
+                await loadOrderFormDependencies();
+
+            } catch (error) {
+                displayMessage('quickClientMessage', `Erro ao cadastrar cliente: ${error.message}`, false);
+            }
+        });
+
+        // READ (Listar Pedidos)
+        async function loadOrders() {
+            $('ordersBody').innerHTML = '<tr><td colspan="5">Carregando pedidos...</td></tr>';
+            try {
+                const orders = await apiRequest('pedidos');
+                renderOrders(orders);
+            } catch (error) {
+                $('ordersBody').innerHTML = `<tr><td colspan="5" class="error-message">${error.message}</td></tr>`;
+            }
+        }
+
+        function renderOrders(orders) {
+            $('ordersBody').innerHTML = '';
+            if (orders.length === 0) {
+                $('ordersBody').innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum pedido cadastrado.</td></tr>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const row = $('ordersBody').insertRow();
+                // CORREÇÃO: Exibir nome do cliente em vez do ID
+                const clientName = order.cliente
+                    ? (order.cliente.nome || order.cliente.email || `ID: ${order.cliente.id}`)
+                    : 'N/A';
+                const productCount = order.listaProdutos ? order.listaProdutos.length : 0;
+                const formattedDate = new Date(order.dataHora).toLocaleString('pt-BR');
+
+                row.insertCell().textContent = order.id.substring(0, 8) + '...';
+                row.insertCell().textContent = formattedDate;
+                row.insertCell().textContent = clientName; // Nome do Cliente
+                row.insertCell().textContent = productCount;
+
+                const actionsCell = row.insertCell();
+                actionsCell.className = 'action-btns';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Deletar';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteOrder(order.id);
+                actionsCell.appendChild(deleteBtn);
+            });
+        }
+
+        // DELETE (Deletar Pedido)
+        async function deleteOrder(id) {
+            if (!confirm(`Tem certeza que deseja deletar o pedido ID ${id}?`)) return;
+
+            try {
+                await apiRequest(`pedidos/${id}`, 'DELETE');
+                displayMessage('order-message', `Pedido ID ${id} deletado com sucesso!`, true);
+                loadOrders();
+            } catch (error) {
+                displayMessage('order-message', `Erro ao deletar pedido: ${error.message}`, false);
+            }
+        }
+
+        async function loadOrderFormDependencies() {
+            await loadProducts();
+
+            try {
+                const clients = await apiRequest(CLIENT_ENDPOINT);
+                const selectClient = $('order-client');
+
+                selectClient.innerHTML = '<option value="">Selecione um Cliente (Nome)</option>';
+
+                clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    const clientName = client.nome || client.email;
+                    option.textContent = `${clientName} (ID: ${client.id})`;
+                    selectClient.appendChild(option);
+                });
+            } catch (error) {
+                displayMessage('order-message', `Erro ao carregar clientes: ${error.message}`, false);
+            }
+
+            renderAvailableProducts();
+            renderSelectedProducts();
+        }
+
+        function renderAvailableProducts() {
+            const listContainer = $('availableProductsList');
+            listContainer.innerHTML = '';
+
+            if (availableProducts.length === 0) {
+                listContainer.innerHTML = '<p>Nenhum produto disponível. Cadastre na aba Produtos.</p>';
+                return;
+            }
+
+            availableProducts.forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'product-item';
+                item.setAttribute('data-id', product.id);
+                item.textContent = `${product.nome} (R$ ${parseFloat(product.preco).toFixed(2)})`;
+                item.onclick = () => addProductToOrder(product);
+                listContainer.appendChild(item);
+            });
+        }
+
+        function addProductToOrder(product) {
+            selectedProducts.push({ id: product.id, nome: product.nome });
+            renderSelectedProducts();
+        }
+
+        function removeProductFromOrder(index) {
+            selectedProducts.splice(index, 1);
+            renderSelectedProducts();
+        }
+
+        function renderSelectedProducts() {
+            const list = $('selectedProductsList');
+            list.innerHTML = '';
+
+            if (selectedProducts.length === 0) {
+                list.innerHTML = '<li>Nenhum produto selecionado.</li>';
+                return;
+            }
+
+            selectedProducts.forEach((product, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${product.nome}
+                                <span class="remove-product" data-index="${index}">[X Remover]</span>`;
+
+                li.querySelector('.remove-product').onclick = () => removeProductFromOrder(index);
+                list.appendChild(li);
+            });
+        }
+
+
+        // CREATE (Fazer Pedido - POST)
+        $('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const clienteId = parseInt($('order-client').value);
+
+            if (!clienteId) {
+                displayMessage('order-message', 'Selecione um cliente para fazer o pedido.', false);
+                return;
+            }
+
+            if (selectedProducts.length === 0) {
+                displayMessage('order-message', 'Adicione pelo menos um produto ao pedido.', false);
+                return;
+            }
+
+            const payload = {
+                cliente: { id: clienteId },
+                listaProdutos: selectedProducts.map(p => ({ id: p.id }))
+            };
+
+            try {
+                await apiRequest('pedidos', 'POST', payload);
+                displayMessage('order-message', 'Pedido criado com sucesso!', true);
+
+                $('orderForm').reset();
+                selectedProducts = [];
+                renderSelectedProducts();
+                loadOrders();
+            } catch (error) {
+                displayMessage('order-message', `Erro ao criar pedido: ${error.message}`, false);
+            }
+        });
+
+
+        // --- 4. Clientes (Listagem e Visualização de Pedidos) ---
+
+        async function loadClients() {
+            $('clientsBody').innerHTML = '<tr><td colspan="3">Carregando clientes...</td></tr>';
+            try {
+                const clients = await apiRequest(CLIENT_ENDPOINT);
+                renderClients(clients);
+            } catch (error) {
+                $('clientsBody').innerHTML = `<tr><td colspan="3" class="error-message">${error.message}. Verifique se a rota /api/${CLIENT_ENDPOINT} existe.</td></tr>`;
+            }
+        }
+
+        function renderClients(clients) {
+            $('clientsBody').innerHTML = '';
+            if (clients.length === 0) {
+                $('clientsBody').innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum cliente cadastrado.</td></tr>';
+                return;
+            }
+
+            clients.forEach(client => {
+                const row = $('clientsBody').insertRow();
+                row.classList.add('clickable-row');
+                row.onclick = () => showClientOrders(client.id, client.nome || client.email);
+
+                row.insertCell().textContent = client.id;
+                row.insertCell().textContent = client.nome || 'N/A';
+                row.insertCell().textContent = client.email || 'N/A';
+            });
+        }
+
+        async function showClientOrders(clientId, clientName) {
+            $('clientOrdersBody').innerHTML = '<tr><td colspan="4">Buscando pedidos...</td></tr>';
+            $('selectedClientId').textContent = `${clientId} (${clientName})`;
+            $('clientOrdersArea').classList.remove('hidden');
+
+            $('editOrderForm').classList.add('hidden');
+
+            try {
+                const orders = await apiRequest(`pedidos/cliente/${clientId}`);
+                renderClientOrders(orders, clientId, clientName);
+            } catch (error) {
+                $('clientOrdersBody').innerHTML = `<tr><td colspan="4" class="error-message">
+                    Erro ao buscar pedidos: ${error.message}.
+                </td></tr>`;
+            }
+        }
+
+        function renderClientOrders(orders, clientId, clientName) {
+            $('clientOrdersBody').innerHTML = '';
+            if (orders.length === 0) {
+                $('clientOrdersBody').innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum pedido encontrado para este cliente.</td></tr>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const row = $('clientOrdersBody').insertRow();
+                const productCount = order.listaProdutos ? order.listaProdutos.length : 0;
+                const formattedDate = new Date(order.dataHora).toLocaleString('pt-BR');
+
+                row.insertCell().textContent = order.id.substring(0, 8) + '...';
+                row.insertCell().textContent = formattedDate;
+                row.insertCell().textContent = productCount;
+
+                const actionsCell = row.insertCell();
+                actionsCell.className = 'action-btns';
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Editar';
+                editBtn.className = 'edit-btn';
+                editBtn.onclick = () => loadOrderForEdit(order);
+                actionsCell.appendChild(editBtn);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Deletar';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = async () => {
+                    if (!confirm(`Tem certeza que deseja deletar o pedido ID ${order.id.substring(0, 8)}...?`)) return;
+                    try {
+                        await apiRequest(`pedidos/${order.id}`, 'DELETE');
+                        displayMessage('clientOrderMessage', `Pedido ID ${order.id.substring(0, 8)} deletado com sucesso!`, true);
+                        showClientOrders(clientId, clientName);
+                    } catch (error) {
+                        displayMessage('clientOrderMessage', `Erro ao deletar pedido: ${error.message}`, false);
+                    }
+                }
+                actionsCell.appendChild(deleteBtn);
+            });
+        }
+
+        // --- Lógica de Edição de Pedido de Cliente (CRUD Completo na UI) ---
+
+        function renderCurrentOrderProducts() {
+            const list = $('currentOrderProductsList');
+            list.innerHTML = '';
+
+            if (editingOrderProducts.length === 0) {
+                list.innerHTML = '<li>Nenhum produto selecionado.</li>';
+                return;
+            }
+
+            editingOrderProducts.forEach((product, index) => {
+                const li = document.createElement('li');
+                const name = product.nome || `ID: ${product.id}`;
+
+                li.innerHTML = `${name}
+                                <span class="remove-product" data-index="${index}">[X Remover]</span>`;
+
+                li.querySelector('.remove-product').onclick = () => {
+                    editingOrderProducts.splice(index, 1);
+                    renderCurrentOrderProducts();
+                };
+                list.appendChild(li);
+            });
+        }
+
+
+        function renderAvailableProductsForEdit() {
+            const listContainer = $('availableProductsListForEdit');
+            listContainer.innerHTML = '';
+
+            if (availableProducts.length === 0) {
+                listContainer.innerHTML = '<p>Nenhum produto disponível. Cadastre na aba Produtos.</p>';
+                return;
+            }
+
+            availableProducts.forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'product-item';
+                item.textContent = `${product.nome} (R$ ${parseFloat(product.preco).toFixed(2)})`;
+                item.onclick = () => {
+                    editingOrderProducts.push({ id: product.id, nome: product.nome });
+                    renderCurrentOrderProducts();
+                };
+                listContainer.appendChild(item);
+            });
+        }
+
+
+        async function loadOrderForEdit(order) {
+            currentEditingOrderId = order.id;
+            editingOrderProducts = order.listaProdutos.map(p => ({ id: p.id, nome: p.nome }));
+
+            $('edit-order-id').value = order.id;
+            $('editingOrderId').textContent = order.id.substring(0, 8) + '...';
+            $('editOrderForm').classList.remove('hidden');
+
+            renderCurrentOrderProducts();
+            renderAvailableProductsForEdit();
+
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+
+        $('editOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const orderId = $('edit-order-id').value;
+
+            if (editingOrderProducts.length === 0) {
+                displayMessage('clientOrderMessage', 'O pedido deve ter pelo menos um produto.', false);
+                return;
+            }
+
+            const currentOrder = await apiRequest(`pedidos/${orderId}`);
+
+            const payload = {
+                cliente: currentOrder.cliente,
+                listaProdutos: editingOrderProducts.map(p => ({ id: p.id }))
+            };
+
+            try {
+                await apiRequest(`pedidos/${orderId}`, 'PUT', payload);
+                displayMessage('clientOrderMessage', `Pedido ID ${orderId.substring(0, 8)} atualizado com sucesso!`, true);
+
+                const fullText = $('selectedClientId').textContent.trim();
+                const clientId = fullText.substring(0, fullText.indexOf(' '));
+                const clientName = fullText.substring(fullText.indexOf('(') + 1, fullText.indexOf(')'));
+
+                showClientOrders(clientId, clientName);
+
+                $('editOrderForm').classList.add('hidden');
+                currentEditingOrderId = null;
+                editingOrderProducts = [];
+            } catch (error) {
+                displayMessage('clientOrderMessage', `Erro ao atualizar pedido: ${error.message}`, false);
+            }
+        });
+
+        $('cancelEditOrder').addEventListener('click', () => {
+            $('editOrderForm').classList.add('hidden');
+            currentEditingOrderId = null;
+            editingOrderProducts = [];
+        });
+
+        // --- Inicialização ---
+        loadProducts();
+    </script>
+</body>
+
+</html>

@@ -1,3 +1,5 @@
+//controller/UsuarioController.ts
+
 import { Request, Response } from 'express';
 import { UsuarioService } from '../service/UsuarioService';
 
@@ -10,12 +12,12 @@ export class UsuarioController {
 
   inserir = async (req: Request, res: Response): Promise<void> => {
     const { email, senha } = req.body;
-    try{  
-        const novoUsuario = await this.service.inserir({ email, senha });
-        res.status(201).json(novoUsuario);
-    } 
-    catch(err:any) {
-        res.status(err.id || 500).json({ error: err.msg || "Erro ao inserir usuário" });
+    try {
+      const novoUsuario = await this.service.inserir({ email, senha });
+      res.status(201).json(novoUsuario);
+    }
+    catch (err: any) {
+      res.status(err.id || 500).json({ error: err.msg || "Erro ao inserir usuário" });
     }
   };
 
